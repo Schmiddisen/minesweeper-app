@@ -21,6 +21,7 @@ export class GameLoop {
     this.animationFrame = requestAnimationFrame(this.loop);
   };
 
+
   public stop() {
     if (this.animationFrame !== null) {
       cancelAnimationFrame(this.animationFrame);
