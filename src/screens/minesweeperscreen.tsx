@@ -15,9 +15,9 @@ import { ActivityIndicator } from 'react-native';
 
 // Define game modes
 const GAME_MODES = {
-  EASY: { rows: 8, cols: 8, mines: 10 },
-  MEDIUM: { rows: 10, cols: 10, mines: 20 },
-  EXPERT: { rows: 16, cols: 16, mines: 40 },
+  EASY: { rows: 9, cols: 9, mines: 10 },
+  MEDIUM: { rows: 16, cols: 16, mines: 40 },
+  EXPERT: { rows: 30, cols: 16, mines: 99 },
 };
 
 export default function MinesweeperScreen() {
