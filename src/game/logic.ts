@@ -96,3 +96,54 @@ export const checkWin = (board: Board, mines: number): boolean => {
   });
   return totalCells - revealedCount === mines;
 };
+
+// Counts flagged neighbors around a given cell
+export const countFlaggedNeighbors = (board: Board, row: number, col: number): number => {
+  let count = 0;
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = row + dr;
+      const nc = col + dc;
+      if (
+        nr >= 0 &&
+        nr < board.length &&
+        nc >= 0 &&
+        nc < board[0].length &&
+        board[nr][nc].flagged
+      ) {
+        count++;
+      }
+    }
+  }
+  return count;
+};
+
+// Reveals all non-flagged neighbors of a cell
+export const revealNeighboringCells = (board: Board, row: number, col: number, rows: number, cols: number): Board => {
+  let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = row + dr;
+      const nc = col + dc;
+      if (
+        nr >= 0 &&
+        nr < rows &&
+        nc >= 0 &&
+        nc < cols &&
+        !newBoard[nr][nc].revealed &&
+        !newBoard[nr][nc].flagged
+      ) {
+        if (newBoard[nr][nc].mine) {
+          newBoard = newBoard.map((r) =>
+            r.map((cell) => ({ ...cell, revealed: true }))
+          );
+        } else {
+          newBoard = revealEmptyCells(newBoard, nr, nc, rows, cols);
+        }
+      }
+    }
+  }
+  return newBoard;
+};

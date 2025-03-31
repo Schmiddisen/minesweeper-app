@@ -8,7 +8,7 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Board from "../components/board";
 import Button from "../components/button";
-import { generateBoard, revealEmptyCells, checkWin } from "../game/logic";
+import { generateBoard, revealEmptyCells, checkWin, countFlaggedNeighbors, revealNeighboringCells } from "../game/logic";
 import { Cell } from "../game/models";
 
 export default function MinesweeperScreen() {
@@ -24,26 +24,44 @@ export default function MinesweeperScreen() {
   }));
 
   const handlePressCell = (row: number, col: number) => {
-    if (
-      gameOver ||
-      board[row][col].revealed ||
-      (board[row][col].flagged && !flagMode)
-    )
-      return;
+    if (gameOver) return;
+  
     let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
+  
     if (flagMode) {
+      // Toggle flag when in flag mode
       newBoard[row][col].flagged = !newBoard[row][col].flagged;
-    } else {
-      if (newBoard[row][col].mine) {
-        newBoard = newBoard.map((r) =>
-          r.map((cell) => ({ ...cell, revealed: true }))
-        );
-        setGameOver(true);
-        Alert.alert("Game Over", "You hit a mine!");
-      } else {
-        newBoard = revealEmptyCells(newBoard, row, col, rows, cols);
-      }
+      setBoard(newBoard);
+      return;
     }
+  
+    // Prevent interacting with flagged cells (unless flagMode is enabled)
+    if (board[row][col].flagged) return;
+  
+    if (board[row][col].revealed && board[row][col].adjacent > 0) {
+      // Chain reveal logic
+      const flaggedCount = countFlaggedNeighbors(board, row, col);
+      if (flaggedCount === board[row][col].adjacent) {
+        newBoard = revealNeighboringCells(board, row, col, rows, cols);
+      }
+      setBoard(newBoard);
+      if (checkWin(newBoard, mines)) {
+        Alert.alert("Congratulations", "You won!");
+        setGameOver(true);
+      }
+      return;
+    }
+  
+    if (newBoard[row][col].mine) {
+      newBoard = newBoard.map((r) =>
+        r.map((cell) => ({ ...cell, revealed: true }))
+      );
+      setGameOver(true);
+      Alert.alert("Game Over", "You hit a mine!");
+    } else {
+      newBoard = revealEmptyCells(newBoard, row, col, rows, cols);
+    }
+  
     setBoard(newBoard);
     if (checkWin(newBoard, mines)) {
       Alert.alert("Congratulations", "You won!");
