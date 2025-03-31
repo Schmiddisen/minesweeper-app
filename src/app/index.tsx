@@ -1,4 +1,4 @@
-// app/index.tsx
-import MinesweeperScreen from "../screens/minesweeperscreen";
+import StartScreen from "../screens/start_page";
 
-export default MinesweeperScreen;
+export default StartScreen;
+

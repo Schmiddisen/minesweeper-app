@@ -10,11 +10,15 @@ import Board from "../components/board";
 import Button from "../components/button";
 import { generateBoard, revealEmptyCells, checkWin } from "../game/logic";
 import { Cell } from "../game/models";
+import { useFonts } from 'expo-font';
+import { ActivityIndicator } from 'react-native';
 
-export default function MinesweeperScreen() {
-  const rows = 8,
-    cols = 8,
-    mines = 10;
+export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { rows?: number, cols?: number, mines?: number }) {
+  const [fontsLoaded] = useFonts({
+    RajdhaniRegular: require('../assets/fonts/Rajdhani-Regular.ttf'),
+  });
+
+  // Alle Hooks werden unconditionally aufgerufen.
   const [board, setBoard] = useState(generateBoard(rows, cols, mines));
   const [gameOver, setGameOver] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
@@ -60,7 +64,9 @@ export default function MinesweeperScreen() {
     scale.value = event.scale;
   });
 
-  return (
+  const content = !fontsLoaded ? (
+    <ActivityIndicator size="large" color="#0000ff" />
+  ) : (
     <GestureHandlerRootView style={styles.container}>
       <Text style={styles.title}>Minesweeper</Text>
       <View style={styles.buttonContainer}>
@@ -77,6 +83,8 @@ export default function MinesweeperScreen() {
       </GestureDetector>
     </GestureHandlerRootView>
   );
+
+  return content;
 }
 
 const styles = StyleSheet.create({
@@ -96,6 +104,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
+    fontFamily: "RajdhaniRegular",
   },
   buttonContainer: {
     borderWidth: 1,
