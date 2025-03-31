@@ -13,13 +13,23 @@ import { Cell } from "../game/models";
 import { useFonts } from 'expo-font';
 import { ActivityIndicator } from 'react-native';
 
-export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { rows?: number, cols?: number, mines?: number }) {
+// Define game modes
+const GAME_MODES = {
+  EASY: { rows: 8, cols: 8, mines: 10 },
+  MEDIUM: { rows: 10, cols: 10, mines: 20 },
+  EXPERT: { rows: 16, cols: 16, mines: 40 },
+};
+
+export default function MinesweeperScreen() {
   const [fontsLoaded] = useFonts({
     RajdhaniRegular: require('../assets/fonts/Rajdhani-Regular.ttf'),
   });
 
-  // Alle Hooks werden unconditionally aufgerufen.
-  const [board, setBoard] = useState(generateBoard(rows, cols, mines));
+  // State to hold the game mode
+  const [gameMode, setGameMode] = useState<'EASY' | 'MEDIUM' | 'EXPERT'>('EASY');
+  
+  // Initialize the board based on the current game mode
+  const [board, setBoard] = useState(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
   const [gameOver, setGameOver] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
   const scale = useSharedValue(1);
@@ -27,11 +37,19 @@ export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { 
     transform: [{ scale: scale.value }],
   }));
 
+  // Function to change the game mode
+  const changeGameMode = (mode: 'EASY' | 'MEDIUM' | 'EXPERT') => {
+    setGameMode(mode);
+    const { rows, cols, mines } = GAME_MODES[mode];
+    setBoard(generateBoard(rows, cols, mines));
+    setGameOver(false);
+  };
+
   const handlePressCell = (row: number, col: number) => {
     if (gameOver) return;
-  
+
     let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
-  
+
     if (flagMode) {
       // Prevent flagging on revealed tiles
       if (!newBoard[row][col].revealed) {
@@ -40,24 +58,24 @@ export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { 
       }
       return;
     }
-  
+
     // Prevent interacting with flagged cells (unless flagMode is enabled)
     if (board[row][col].flagged) return;
-  
+
     if (board[row][col].revealed && board[row][col].adjacent > 0) {
       // Chain reveal logic
       const flaggedCount = countFlaggedNeighbors(board, row, col);
       if (flaggedCount === board[row][col].adjacent) {
-        newBoard = revealNeighboringCells(board, row, col, rows, cols);
+        newBoard = revealNeighboringCells(board, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
       }
       setBoard(newBoard);
-      if (checkWin(newBoard, mines)) {
+      if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
         Alert.alert("Congratulations", "You won!");
         setGameOver(true);
       }
       return;
     }
-  
+
     if (newBoard[row][col].mine) {
       newBoard = newBoard.map((r) =>
         r.map((cell) => ({ ...cell, revealed: true }))
@@ -65,18 +83,18 @@ export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { 
       setGameOver(true);
       Alert.alert("Game Over", "You hit a mine!");
     } else {
-      newBoard = revealEmptyCells(newBoard, row, col, rows, cols);
+      newBoard = revealEmptyCells(newBoard, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
     }
-  
+
     setBoard(newBoard);
-    if (checkWin(newBoard, mines)) {
+    if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
       Alert.alert("Congratulations", "You won!");
       setGameOver(true);
     }
   };
 
   const restartGame = () => {
-    setBoard(generateBoard(rows, cols, mines));
+    setBoard(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
     setGameOver(false);
   };
 
@@ -89,6 +107,11 @@ export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { 
   ) : (
     <GestureHandlerRootView style={styles.container}>
       <Text style={styles.title}>Minesweeper</Text>
+      <View style={styles.gameModeContainer}>
+        <Button title="Easy" onPress={() => changeGameMode('EASY')} />
+        <Button title="Medium" onPress={() => changeGameMode('MEDIUM')} />
+        <Button title="Expert" onPress={() => changeGameMode('EXPERT')} />
+      </View>
       <View style={styles.buttonContainer}>
         <Button
           title={flagMode ? "Select Mode" : "Flag Mode"}
@@ -109,35 +132,28 @@ export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { 
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderStyle: "solid",
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
   },
   title: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderStyle: "solid",
     fontSize: 28,
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
     fontFamily: "RajdhaniRegular",
   },
+  gameModeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginVertical: 20,
+  },
   buttonContainer: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderStyle: "solid",
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
   },
   boardContainer: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderStyle: "solid",
     alignSelf: "center",
   },
 });
