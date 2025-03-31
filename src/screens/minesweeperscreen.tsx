@@ -33,9 +33,11 @@ export default function MinesweeperScreen({ rows = 8, cols = 8, mines = 10 }: { 
     let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
   
     if (flagMode) {
-      // Toggle flag when in flag mode
-      newBoard[row][col].flagged = !newBoard[row][col].flagged;
-      setBoard(newBoard);
+      // Prevent flagging on revealed tiles
+      if (!newBoard[row][col].revealed) {
+        newBoard[row][col].flagged = !newBoard[row][col].flagged;
+        setBoard(newBoard);
+      }
       return;
     }
   
