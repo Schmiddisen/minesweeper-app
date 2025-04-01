@@ -15,6 +15,7 @@ import { useFonts } from 'expo-font';
 import { ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import BombIcon from "../components/startpage_mine";
 
 // Define game modes
 let GAME_MODES = {
@@ -236,12 +237,16 @@ export default function MinesweeperScreen() {
           <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: color }]}>⏳ Time:</Text>
-              <Text style={[styles.infoValue, { color: color }]}>{seconds} Sekunden</Text>
+              <Ionicons name="time-outline" size={20} color={color} />
+              <Text style={[styles.infoValue, { color: color }]}>
+                {seconds} Sekunden
+              </Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: color }]}>💣 Mines:</Text>
-              <Text style={[styles.infoValue, { color: color }]}>{GAME_MODES[gameMode].mines}</Text>
+              <BombIcon size={25} color={color} />
+              <Text style={[styles.infoValue, { color: color }]}>
+                {GAME_MODES[gameMode].mines}
+              </Text>
             </View>
           </View>
         </View>
@@ -275,9 +280,9 @@ export default function MinesweeperScreen() {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={[styles.title, { color: color }]}>Custom Game</Text>
-              
+
               <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, {color: color}]}>Rows:</Text>
+                <Text style={[styles.inputLabel, { color: color }]}>Rows:</Text>
                 <TextInput
                   style={styles.input}
                   keyboardType="numeric"
@@ -288,7 +293,7 @@ export default function MinesweeperScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, {color: color}]}>Cols:</Text>
+                <Text style={[styles.inputLabel, { color: color }]}>Cols:</Text>
                 <TextInput
                   style={styles.input}
                   keyboardType="numeric"
@@ -299,7 +304,9 @@ export default function MinesweeperScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, {color: color}]}>💣 Mines:</Text>
+                <Text style={[styles.inputLabel, { color: color }]}>
+                  Mines:
+                </Text>
                 <TextInput
                   style={styles.input}
                   keyboardType="numeric"
@@ -309,8 +316,16 @@ export default function MinesweeperScreen() {
                 />
               </View>
               <View style={styles.buttonRow}>
-                <Button title="Abbrechen" color="red" onPress={() => setModalVisible(false)} />
-                <Button title="Starten" color={color} onPress={handleCustomGameStart} />
+                <Button
+                  title="Abbrechen"
+                  color="red"
+                  onPress={() => setModalVisible(false)}
+                />
+                <Button
+                  title="Starten"
+                  color={color}
+                  onPress={handleCustomGameStart}
+                />
               </View>
             </View>
           </View>
@@ -320,10 +335,7 @@ export default function MinesweeperScreen() {
         <View style={styles.flagModeWrapper}>
           <TouchableOpacity
             onPress={() => setFlagMode(!flagMode)}
-            style={[
-              styles.flagButton,
-              flagMode && styles.flagButtonActive
-            ]}
+            style={[styles.flagButton, flagMode && styles.flagButtonActive]}
           >
             <Ionicons name="flag" size={24} color="#fff" />
           </TouchableOpacity>
@@ -370,16 +382,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 5,
   },
-  infoLabel: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
   infoValue: {
     fontSize: 18,
   },
   gameModeContainer: {
+    justifyContent: "space-between",
+    flexDirection: "row",
     alignItems: "center",
     marginVertical: 20,
+    paddingHorizontal: 15,
   },
   modeButtonWrapper: {
     flexDirection: "row",
@@ -453,6 +464,8 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 5,
     textAlign: "center",
+    fontFamily: "RajdhaniBold",
+    color: "white",
   },
   inputContainer: {
     width: "100%",
