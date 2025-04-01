@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from "react";
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Alert, Modal, TextInput, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -17,10 +17,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 // Define game modes
-const GAME_MODES = {
+let GAME_MODES = {
   EASY: { rows: 9, cols: 9, mines: 10 },
   MEDIUM: { rows: 16, cols: 16, mines: 40 },
   EXPERT: { rows: 16, cols: 30, mines: 99 },
+  CUSTOM: {rows: 0, cols: 0, mines: 0}
 };
 
 export default function MinesweeperScreen() {
@@ -35,7 +36,7 @@ export default function MinesweeperScreen() {
   });
 
   // State to hold the game mode
-  const [gameMode, setGameMode] = useState<'EASY' | 'MEDIUM' | 'EXPERT'>('EASY');
+  const [gameMode, setGameMode] = useState<'EASY' | 'MEDIUM' | 'EXPERT' | 'CUSTOM'>('EASY');
 
   //Timer stuff
   const [seconds, setTimerSeconds] = useState(0);
@@ -82,18 +83,55 @@ export default function MinesweeperScreen() {
   }));
 
   // Function to change the game mode
-  const changeGameMode = (mode: 'EASY' | 'MEDIUM' | 'EXPERT') => {
+  const changeGameMode = (mode: "EASY" | "MEDIUM" | "EXPERT" | "CUSTOM") => {
+    if (mode === "CUSTOM") {
+      setModalVisible(true); // Öffne das Modal für benutzerdefinierten Modus
+    } else {
+      applyGameModeChanges(mode)
+    }
+  };
+
+
+  //Custom Modal handler
+  const [modalVisible, setModalVisible] = useState(false);
+  const [customRows, setCustomRows] = useState("10");
+  const [customCols, setCustomCols] = useState("10");
+  const [customMines, setCustomMines] = useState("10");
+  
+  const handleCustomGameStart = () => {
+    const rows = parseInt(customRows);
+    const cols = parseInt(customCols);
+    const mines = parseInt(customMines);
+
+    const amountFields = rows * cols;
+  
+    if (isNaN(rows) || isNaN(cols) || isNaN(mines) || rows <= 0 || cols <= 0 || mines <= 0) {
+      alert("Bitte gültige Werte eingeben!");
+      return;
+    }
+    if (mines >= amountFields) {
+      alert("Es gibt mehr oder genau so viele Minen und Felder!");
+      return;
+    }
+    GAME_MODES['CUSTOM'].cols = cols;
+    GAME_MODES['CUSTOM'].rows = rows;
+    GAME_MODES['CUSTOM'].mines = mines;
+
+    applyGameModeChanges('CUSTOM')
+    setModalVisible(false); // Modal schließen
+  };
+
+  const applyGameModeChanges = (mode: "EASY" | "MEDIUM" | "EXPERT" | "CUSTOM") => {
     setGameMode(mode);
     handleTimerReset();
     const { rows, cols, mines } = GAME_MODES[mode];
     setBoard(generateBoard(rows, cols, mines));
     setGameOver(false);
-    setFirstClick(true); // Reset first click for the new game mode
-    // Reset the board's position and size
+    setFirstClick(true);
     translateX.value = 0;
     translateY.value = 0;
-    scale.value = 1; // Reset the scale to original size
-  };
+    scale.value = 1;
+  }
 
   const handlePressCell = (row: number, col: number) => {
     if (gameOver) return;
@@ -198,11 +236,11 @@ export default function MinesweeperScreen() {
           <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: color }]}>⏳ Zeit:</Text>
+              <Text style={[styles.infoLabel, { color: color }]}>⏳ Time:</Text>
               <Text style={[styles.infoValue, { color: color }]}>{seconds} Sekunden</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, { color: color }]}>💣 Bomben:</Text>
+              <Text style={[styles.infoLabel, { color: color }]}>💣 Mines:</Text>
               <Text style={[styles.infoValue, { color: color }]}>{GAME_MODES[gameMode].mines}</Text>
             </View>
           </View>
@@ -225,10 +263,55 @@ export default function MinesweeperScreen() {
           color={color}
         />
         <Button
-          title="OWn"
-          onPress={() => changeGameMode("EXPERT")}
+          title="Custom"
+          onPress={() => changeGameMode("CUSTOM")}
           color={color}
         />
+        {/* Custom Game Modal */}
+        <Modal animationType="slide" transparent={true} visible={modalVisible}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={[styles.title, { color: color }]}>Custom Game</Text>
+              
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, {color: color}]}>Rows:</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="Zeilen"
+                  value={customRows}
+                  onChangeText={setCustomRows}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, {color: color}]}>Cols:</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="Spalten"
+                  value={customCols}
+                  onChangeText={setCustomCols}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, {color: color}]}>💣 Mines:</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  placeholder="Minen"
+                  value={customMines}
+                  onChangeText={setCustomMines}
+                />
+              </View>
+              <View style={styles.buttonRow}>
+                <Button title="Abbrechen" color="red" onPress={() => setModalVisible(false)} />
+                <Button title="Starten" color={color} onPress={handleCustomGameStart} />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
       <View style={styles.buttonContainer}>
         <Button
@@ -311,5 +394,46 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#333",
+    padding: 20,
+    borderRadius: 10,
+    width: 300,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+    textAlign: "center",
+  },
+  inputContainer: {
+    width: "100%",
+    marginBottom: 10,
+  },
+  inputLabel: {
+    fontSize: 14,
+    marginBottom: 4,
+    textAlign: "left",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 10,
   },
 });
