@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, Image } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -9,10 +9,11 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Board from "../components/board";
 import Button from "../components/button";
-import { generateBoard, revealEmptyCells, checkWin, countFlaggedNeighbors, revealNeighboringCells } from "../game/logic";
+import { generateBoard, revealEmptyCells, checkWin } from "../game/logic";
 import { Cell } from "../game/models";
 import { useFonts } from 'expo-font';
 import { ActivityIndicator } from 'react-native';
+import { useLocalSearchParams } from "expo-router";
 
 // Define game modes
 const GAME_MODES = {
@@ -23,7 +24,7 @@ const GAME_MODES = {
 
 export default function MinesweeperScreen() {
   const [fontsLoaded] = useFonts({
-    RajdhaniRegular: require('../assets/fonts/Rajdhani-Regular.ttf'),
+    RajdhaniRegular: require("../assets/fonts/Rajdhani-Regular.ttf"),
   });
 
   // State to hold the game mode
@@ -100,8 +101,10 @@ export default function MinesweeperScreen() {
       if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
         Alert.alert("Congratulations", "You won!");
         setGameOver(true);
+        Alert.alert("Game Over", "You hit a mine!");
+      } else {
+        newBoard = revealEmptyCells(newBoard, row, col, Number(rows), Number(cols));
       }
-      return;
     }
 
     if (newBoard[row][col].mine) {
@@ -202,5 +205,8 @@ const styles = StyleSheet.create({
   },
   boardContainer: {
     alignSelf: "center",
+  },
+  image: {
+  width: "100%",
   },
 });
