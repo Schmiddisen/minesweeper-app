@@ -5,7 +5,9 @@ export type Board = Cell[][];
 export const generateBoard = (
   rows: number,
   cols: number,
-  mines: number
+  mines: number,
+  firstClickRow?: number,
+  firstClickCol?: number
 ): Board => {
   let board: Board = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => ({
@@ -15,15 +17,28 @@ export const generateBoard = (
       adjacent: 0,
     }))
   );
+
   let minesPlaced = 0;
+
   while (minesPlaced < mines) {
     const row = Math.floor(Math.random() * rows);
     const col = Math.floor(Math.random() * cols);
+
+    // Ensure the first clicked cell doesn't have a mine
+    if (
+      (firstClickRow !== undefined && firstClickCol !== undefined) &&
+      (row === firstClickRow && col === firstClickCol)
+    ) {
+      continue; // Skip placing a mine here
+    }
+
     if (!board[row][col].mine) {
       board[row][col].mine = true;
       minesPlaced++;
     }
   }
+
+  // Set the adjacent mine count for each cell
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (!board[r][c].mine) {
@@ -48,6 +63,7 @@ export const generateBoard = (
       }
     }
   }
+
   return board;
 };
 

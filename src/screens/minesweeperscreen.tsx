@@ -28,7 +28,9 @@ export default function MinesweeperScreen() {
   // State to hold the game mode
   const [gameMode, setGameMode] = useState<'EASY' | 'MEDIUM' | 'EXPERT'>('EASY');
   
-  // Initialize the board based on the current game mode
+  // Track if it's the first click
+  const [firstClick, setFirstClick] = useState(true);
+  
   const [board, setBoard] = useState(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
   const [gameOver, setGameOver] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
@@ -43,12 +45,21 @@ export default function MinesweeperScreen() {
     const { rows, cols, mines } = GAME_MODES[mode];
     setBoard(generateBoard(rows, cols, mines));
     setGameOver(false);
+    setFirstClick(true); // Reset first click for the new game mode
   };
 
   const handlePressCell = (row: number, col: number) => {
     if (gameOver) return;
 
     let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
+
+    // On first click, regenerate the board and ensure the clicked cell isn't a mine
+    if (firstClick) {
+      setFirstClick(false);
+      // Generate the board after the first click and avoid placing a mine on the clicked tile
+      newBoard = generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines, row, col);
+      setBoard(newBoard);
+    }
 
     if (flagMode) {
       // Prevent flagging on revealed tiles
@@ -96,6 +107,7 @@ export default function MinesweeperScreen() {
   const restartGame = () => {
     setBoard(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
     setGameOver(false);
+    setFirstClick(true); // Reset first click
   };
 
   const pinchGesture = Gesture.Pinch().onUpdate((event) => {
