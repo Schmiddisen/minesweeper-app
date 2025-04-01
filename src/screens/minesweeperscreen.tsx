@@ -67,6 +67,13 @@ export default function MinesweeperScreen() {
   const [gameOver, setGameOver] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
   
+  // Function to count flagged cells
+  const getFlaggedCount = () => {
+    return board.reduce((count, row) => {
+      return count + row.filter(cell => cell.flagged).length;
+    }, 0);
+  };
+  
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -245,7 +252,7 @@ export default function MinesweeperScreen() {
             <View style={styles.infoRow}>
               <BombIcon size={25} color={color} />
               <Text style={[styles.infoValue, { color: color }]}>
-                {GAME_MODES[gameMode].mines}
+                {getFlaggedCount()}/{GAME_MODES[gameMode].mines}
               </Text>
             </View>
           </View>
