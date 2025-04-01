@@ -33,7 +33,7 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderWidth: 0.3,
+    borderWidth: 1,
     borderColor: "white",
     paddingVertical: 10,
     paddingHorizontal: 15,
