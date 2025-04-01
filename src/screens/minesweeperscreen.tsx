@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  withSpring,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Board from "../components/board";
@@ -34,9 +35,21 @@ export default function MinesweeperScreen() {
   const [board, setBoard] = useState(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
   const [gameOver, setGameOver] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
+  
   const scale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  
+  // To track initial translation before the pan gesture starts
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
+
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [
+      { scale: withSpring(scale.value) },
+      { translateX: withSpring(translateX.value) },
+      { translateY: withSpring(translateY.value) },
+    ],
   }));
 
   // Function to change the game mode
@@ -89,8 +102,8 @@ export default function MinesweeperScreen() {
 
     if (newBoard[row][col].mine) {
       newBoard = newBoard.map((r) =>
-        r.map((cell) => ({ ...cell, revealed: true }))
-      );
+        r.map((cell) => ({ ...cell, revealed: true })))
+      ;
       setGameOver(true);
       Alert.alert("Game Over", "You hit a mine!");
     } else {
@@ -114,6 +127,20 @@ export default function MinesweeperScreen() {
     scale.value = event.scale;
   });
 
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      // Track the starting position when pan starts
+      startX.value = translateX.value;
+      startY.value = translateY.value;
+    })
+    .onUpdate((event) => {
+      // Accumulate the translation values as the pan gesture updates
+      translateX.value = startX.value + event.translationX;
+      translateY.value = startY.value + event.translationY;
+    });
+
+  const gestureHandler = Gesture.Race(pinchGesture, panGesture);
+
   const content = !fontsLoaded ? (
     <ActivityIndicator size="large" color="#0000ff" />
   ) : (
@@ -131,7 +158,7 @@ export default function MinesweeperScreen() {
         />
         <Button title="Restart Game" onPress={restartGame} />
       </View>
-      <GestureDetector gesture={pinchGesture}>
+      <GestureDetector gesture={gestureHandler}>
         <Animated.View style={[styles.boardContainer, animatedStyle]}>
           <Board board={board} onPressCell={handlePressCell} />
         </Animated.View>
