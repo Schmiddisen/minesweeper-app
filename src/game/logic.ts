@@ -38,14 +38,15 @@ export const generateBoard = (
     }
   }
 
-  // Set the adjacent mine count for each cell
+  // Count how many mines are next to each cell
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (!board[r][c].mine) {
         let count = 0;
+        // Check all 8 cells around this one
         for (let dr = -1; dr <= 1; dr++) {
           for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
+            if (dr === 0 && dc === 0) continue; // Skip the current cell
             const nr = r + dr;
             const nc = c + dc;
             if (

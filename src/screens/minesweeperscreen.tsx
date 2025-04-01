@@ -75,15 +75,16 @@ export default function MinesweeperScreen() {
     }, 0);
   };
   
+  // Animation values for board movement and zoom
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   
-  // To track initial translation before the pan gesture starts
+  // Remember where we started dragging
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
 
-  // Add zoom limits
+  // Don't let players zoom too far in or out
   const MIN_SCALE = 0.5;
   const MAX_SCALE = 3;
 
@@ -117,13 +118,13 @@ export default function MinesweeperScreen() {
     }
   };
 
-
-  //Custom Modal handler
+  // Custom Modal handler
   const [modalVisible, setModalVisible] = useState(false);
   const [customRows, setCustomRows] = useState("10");
   const [customCols, setCustomCols] = useState("10");
   const [customMines, setCustomMines] = useState("10");
   
+  // Handle starting a custom game with user settings
   const handleCustomGameStart = () => {
     const rows = parseInt(customRows);
     const cols = parseInt(customCols);
@@ -147,6 +148,7 @@ export default function MinesweeperScreen() {
     setModalVisible(false); // Close the modal
   };
 
+  // Apply changes when switching game modes
   const applyGameModeChanges = (mode: "EASY" | "MEDIUM" | "EXPERT" | "CUSTOM") => {
     setGameMode(mode);
     handleTimerReset();
@@ -165,7 +167,7 @@ export default function MinesweeperScreen() {
     let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
     setIsTimerRunning(true);
 
-    // On first click, regenerate the board and ensure the clicked cell isn't a mine
+    // Make sure the first click is always safe
     if (firstClick) {
       setFirstClick(false);
       // Generate the board after the first click and avoid placing a mine on the clicked tile
@@ -173,8 +175,8 @@ export default function MinesweeperScreen() {
       setBoard(newBoard);
     }
 
+    // Handle flag placement
     if (flagMode) {
-      // Prevent flagging on revealed tiles
       if (!newBoard[row][col].revealed) {
         newBoard[row][col].flagged = !newBoard[row][col].flagged;
         setBoard(newBoard);
@@ -182,7 +184,7 @@ export default function MinesweeperScreen() {
       return;
     }
 
-    // Prevent interacting with flagged cells (unless flagMode is enabled)
+    // Don't reveal flagged cells
     if (board[row][col].flagged) return;
 
     if (board[row][col].revealed && board[row][col].adjacent > 0) {
@@ -202,6 +204,7 @@ export default function MinesweeperScreen() {
       }
     }
 
+    // Handle hitting a mine
     if (newBoard[row][col].mine) {
       newBoard = newBoard.map((r) =>
         r.map((cell) => ({ ...cell, revealed: true })))
@@ -234,15 +237,17 @@ export default function MinesweeperScreen() {
     scale.value = 1; // Reset the scale to original size
   };
 
-  // Add zoom functions
+  // Handle zooming in
   const zoomIn = () => {
     scale.value = Math.min(scale.value + ZOOM_STEP, MAX_SCALE);
   };
 
+  // Handle zooming out
   const zoomOut = () => {
     scale.value = Math.max(scale.value - ZOOM_STEP, MIN_SCALE);
   };
 
+  // Set up gesture handling for zooming and panning
   const pinchGesture = Gesture.Pinch()
     .onStart((event) => {
       focalX.value = event.focalX;

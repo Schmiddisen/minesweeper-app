@@ -10,14 +10,15 @@ interface BoardProps {
 }
 
 export default function Board({ board, onPressCell, cellcolor }: BoardProps) {
-  // Calculate delay based on distance from the center for chain reactions
+  // Calculate how long to wait before revealing each cell in a chain reaction
+  // Cells further from the center reveal later for a wave effect
   const getDelay = (row: number, col: number) => {
     const centerRow = Math.floor(board.length / 2);
     const centerCol = Math.floor(board[0].length / 2);
     const distance = Math.sqrt(
       Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2)
     );
-    return Math.min(distance * 50, 500); // Max delay of 500ms
+    return Math.min(distance * 50, 500); // Cap the delay at 500ms
   };
 
   return (

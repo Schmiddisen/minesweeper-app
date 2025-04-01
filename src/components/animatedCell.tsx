@@ -55,7 +55,7 @@ export default function AnimatedCell({
 
   useEffect(() => {
     if (cell.revealed) {
-      // Reveal animation - faster spring
+      // Quick pop animation when revealing a cell
       scale.value = withSequence(
         withDelay(delay, withSpring(0.8, { damping: 10, stiffness: 100 })),
         withSpring(1, { damping: 10, stiffness: 100 })
@@ -76,7 +76,7 @@ export default function AnimatedCell({
 
   useEffect(() => {
     if (cell.mine && cell.revealed) {
-      // Mine explosion animation
+      // Dramatic pulse effect when hitting a mine
       scale.value = withSequence(
         withSpring(1.2, { damping: 8, stiffness: 100 }),
         withSpring(1, { damping: 8, stiffness: 100 }),
