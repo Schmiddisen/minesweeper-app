@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -13,6 +13,8 @@ import { generateBoard, revealEmptyCells, checkWin, countFlaggedNeighbors, revea
 import { Cell } from "../game/models";
 import { useFonts } from 'expo-font';
 import { ActivityIndicator } from 'react-native';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 // Define game modes
 const GAME_MODES = {
@@ -22,6 +24,8 @@ const GAME_MODES = {
 };
 
 export default function MinesweeperScreen() {
+  const router = useRouter();
+  const { color } = useLocalSearchParams<{ color?: string }>();
   const [fontsLoaded] = useFonts({
     RajdhaniRegular: require("../assets/fonts/Rajdhani-Regular.ttf"),
     RajdhaniBold: require("../assets/fonts/Rajdhani-Bold.ttf"),
@@ -156,25 +160,54 @@ export default function MinesweeperScreen() {
   const gestureHandler = Gesture.Race(pinchGesture, panGesture);
 
   const content = !fontsLoaded ? (
-    <ActivityIndicator size="large" color="#0000ff" />
+    <ActivityIndicator size="large" color={color} />
   ) : (
     <GestureHandlerRootView style={styles.container}>
-      <Text style={styles.title}>Minesweeper</Text>
+      <View style={styles.container_header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={32} color="#fff" />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
+        </View>
+      </View>
       <View style={styles.gameModeContainer}>
-        <Button title="Easy" onPress={() => changeGameMode('EASY')} />
-        <Button title="Medium" onPress={() => changeGameMode('MEDIUM')} />
-        <Button title="Expert" onPress={() => changeGameMode('EXPERT')} />
+        <Button
+          title="Easy"
+          onPress={() => changeGameMode("EASY")}
+          color={color}
+        />
+        <Button
+          title="Medium"
+          onPress={() => changeGameMode("MEDIUM")}
+          color={color}
+        />
+        <Button
+          title="Expert"
+          onPress={() => changeGameMode("EXPERT")}
+          color={color}
+        />
+        <Button
+          title="OWn"
+          onPress={() => changeGameMode("EXPERT")}
+          color={color}
+        />
       </View>
       <View style={styles.buttonContainer}>
         <Button
           title={flagMode ? "Select Mode" : "Flag Mode"}
           onPress={() => setFlagMode(!flagMode)}
+          color={color}
         />
-        <Button title="Restart Game" onPress={restartGame} />
+        <Button title="Restart Game" onPress={restartGame} color={color} />
       </View>
       <GestureDetector gesture={gestureHandler}>
         <Animated.View style={[styles.boardContainer, animatedStyle]}>
-          <Board board={board} onPressCell={handlePressCell} />
+          <Board
+            board={board}
+            onPressCell={handlePressCell}
+            cellcolor={color}
+          />
         </Animated.View>
       </GestureDetector>
     </GestureHandlerRootView>
@@ -187,14 +220,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "black",
+    backgroundColor: "#242930",
   },
   title: {
-    fontSize: 28,
+    fontSize: 40,
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
     fontFamily: "RajdhaniBold",
+    alignSelf: "center",
+    marginLeft: -22,
   },
   gameModeContainer: {
     flexDirection: "row",
@@ -209,7 +244,16 @@ const styles = StyleSheet.create({
   boardContainer: {
     alignSelf: "center",
   },
+  container_header: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   image: {
-  width: "100%",
+    width: "100%",
   },
 });

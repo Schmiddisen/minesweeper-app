@@ -13,6 +13,7 @@ interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   color?: string;
+  fontSize?: number;
 }
 
 export default function Button({
@@ -21,10 +22,11 @@ export default function Button({
   style,
   textStyle,
   color,
+  fontSize,
 }: ButtonProps) {
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Text style={[styles.text, textStyle]}>{title}</Text>
+      <Text style={[styles.text, textStyle, { color: color || "#fff", fontSize }]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -38,9 +40,13 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
+    alignContent: "center",
   },
   text: {
     color: "#fff",
     fontSize: 16,
+    alignSelf: "center",
+    fontFamily: "RajdhaniBold",
+    justifyContent: "center",
   },
 });

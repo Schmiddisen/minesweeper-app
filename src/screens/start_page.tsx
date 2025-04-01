@@ -18,40 +18,46 @@ export default function StartScreen() {
   const [color, setColor] = useState("#FFCC00");
 
 
-  const startGame = () => {
-    router.push('/game');
+  const startGame = (color: string) => {
+    router.push(`/game?color=${encodeURIComponent(color)}`);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.content}>
-            <View style={styles.colorPicker}>
-              {[
-                "#FFCC00",
-                "#4A90E2",
-                "#F95F62",
-                "#7ED321",
-                "#B07CFF",
-                "#FF9F1C",
-              ].map((c) => (
-                <TouchableOpacity
-                  key={c}
-                  onPress={() => setColor(c)}
-                  style={[
-                    styles.colorDot,
-                    { backgroundColor: c, borderWidth: c === color ? 2 : 0 },
-                  ]}
-                />
-              ))}
-            </View>
-            <BombIcon size={200} color={color} />
-            <Text style={styles.title}>Minesweeper</Text>
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.colorPicker}>
+            {[
+              "#FFCC00",
+              "#4A90E2",
+              "#F95F62",
+              "#7ED321",
+              "#B07CFF",
+              "#FF9F1C",
+            ].map((c) => (
+              <TouchableOpacity
+                key={c}
+                onPress={() => setColor(c)}
+                style={[
+                  styles.colorDot,
+                  { backgroundColor: c, borderWidth: c === color ? 2 : 0 },
+                ]}
+              />
+            ))}
           </View>
-          <View style={styles.bottom}>
-            <Button title="Play" onPress={startGame} style={styles.button} />
-          </View>
+          <BombIcon size={200} color={color} />
+          <Text style={styles.title}>Minesweeper</Text>
         </View>
+        <View style={styles.bottom}>
+          <Button
+            title="Start Game"
+            onPress={() => startGame(color)}
+            style={styles.button}
+            color={color}
+            fontSize={35}
+          />
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -97,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    fontSize: 28,
+    fontSize: 40,
     color: "white",
     marginBottom: 40,
     fontFamily: "RajdhaniBold",
@@ -107,5 +113,5 @@ const styles = StyleSheet.create({
     height: 60,
     marginTop: 20,
     alignSelf: "flex-end",
-  },
+  }
 });

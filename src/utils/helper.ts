@@ -27,4 +27,25 @@ export const sleep = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
+/** 
+ * Erstellt die invertirte Farbe eines gegebenen Farbwertes
+ * @param color Der zu invertierende Farbwert
+ */
+export function invertColor(hex: string): string {
+  // Remove the # if present
+  hex = hex.replace(/^#/, "");
+
+  // Parse each color channel and invert it
+  const r = (255 - parseInt(hex.substring(0, 2), 16))
+    .toString(16)
+    .padStart(2, "0");
+  const g = (255 - parseInt(hex.substring(2, 4), 16))
+    .toString(16)
+    .padStart(2, "0");
+  const b = (255 - parseInt(hex.substring(4, 6), 16))
+    .toString(16)
+    .padStart(2, "0");
+
+  return `#${r}${g}${b}`;
+}
 // Weitere Hilfsfunktionen können hier hinzugefügt werden

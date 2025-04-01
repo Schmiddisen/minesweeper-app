@@ -1,15 +1,20 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Cell as CellType } from "../game/models";
+import { invertColor } from "../utils/helper";
 
 interface CellProps {
   cell: CellType;
   row: number;
   col: number;
   onPressCell: (row: number, col: number) => void;
+  unrevealedCellsColor?: string;
+  revealedCellsColor?: string;
+  bombCellColor?: string;
+  flaggedCellColor?: string;
 }
 
-export default function Cell({ cell, row, col, onPressCell }: CellProps) {
+export default function Cell({ cell, row, col, onPressCell, unrevealedCellsColor, revealedCellsColor, bombCellColor, flaggedCellColor }: CellProps) {
   let display = "";
   if (cell.flagged) {
     display = "🚩";
@@ -21,12 +26,24 @@ export default function Cell({ cell, row, col, onPressCell }: CellProps) {
       : "";
   }
 
+  let backgroundColor = cell.revealed
+    ? revealedCellsColor || "#eee"
+    : unrevealedCellsColor || "#ccc";
+
+  if (cell.revealed && cell.mine && bombCellColor) {
+    backgroundColor = bombCellColor;
+  } else if (cell.flagged && flaggedCellColor) {
+    backgroundColor = flaggedCellColor;
+  }
+
   return (
     <TouchableOpacity
-      style={[styles.cell, cell.revealed ? styles.revealed : styles.hidden]}
+      style={[styles.cell, { backgroundColor }]}
       onPress={() => onPressCell(row, col)}
     >
-      <Text style={styles.text}>{display}</Text>
+      <Text style={[styles.text, { color: "blue" }]}>
+        {display}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -46,6 +63,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
   },
   text: {
-    fontSize: 16,
+    fontSize: 25,
+    fontFamily: "RajdhaniBold",
   },
 });

@@ -6,9 +6,10 @@ import { Cell as CellType } from "../game/models";
 interface BoardProps {
   board: CellType[][];
   onPressCell: (row: number, col: number) => void;
+  cellcolor?: string;
 }
 
-export default function Board({ board, onPressCell }: BoardProps) {
+export default function Board({ board, onPressCell, cellcolor }: BoardProps) {
   return (
     <View style={styles.board}>
       {board.map((row, rowIndex) => (
@@ -20,6 +21,9 @@ export default function Board({ board, onPressCell }: BoardProps) {
               row={rowIndex}
               col={colIndex}
               onPressCell={onPressCell}
+              unrevealedCellsColor={cellcolor}
+              revealedCellsColor="#999"
+              bombCellColor="#E53935"
             />
           ))}
         </View>
