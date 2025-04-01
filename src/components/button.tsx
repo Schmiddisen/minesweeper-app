@@ -12,6 +12,7 @@ interface ButtonProps {
   onPress: () => void;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  color?: string;
 }
 
 export default function Button({
@@ -19,6 +20,7 @@ export default function Button({
   onPress,
   style,
   textStyle,
+  color,
 }: ButtonProps) {
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
@@ -29,10 +31,11 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "grey",
+    borderWidth: 0.3,
+    borderColor: "white",
     paddingVertical: 10,
     paddingHorizontal: 15,
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
   },

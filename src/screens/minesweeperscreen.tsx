@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert, Image } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -9,11 +9,10 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Board from "../components/board";
 import Button from "../components/button";
-import { generateBoard, revealEmptyCells, checkWin } from "../game/logic";
+import { generateBoard, revealEmptyCells, checkWin, countFlaggedNeighbors, revealNeighboringCells } from "../game/logic";
 import { Cell } from "../game/models";
 import { useFonts } from 'expo-font';
 import { ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from "expo-router";
 
 // Define game modes
 const GAME_MODES = {
@@ -25,6 +24,10 @@ const GAME_MODES = {
 export default function MinesweeperScreen() {
   const [fontsLoaded] = useFonts({
     RajdhaniRegular: require("../assets/fonts/Rajdhani-Regular.ttf"),
+    RajdhaniBold: require("../assets/fonts/Rajdhani-Bold.ttf"),
+    RajdhaniMedium: require("../assets/fonts/Rajdhani-Medium.ttf"),
+    RajdhaniLight: require("../assets/fonts/Rajdhani-Light.ttf"),
+    RajdhaniSemiBold: require("../assets/fonts/Rajdhani-SemiBold.ttf")
   });
 
   // State to hold the game mode
@@ -103,7 +106,7 @@ export default function MinesweeperScreen() {
         setGameOver(true);
         Alert.alert("Game Over", "You hit a mine!");
       } else {
-        newBoard = revealEmptyCells(newBoard, row, col, Number(rows), Number(cols));
+        newBoard = revealEmptyCells(newBoard, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
       }
     }
 
@@ -184,14 +187,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "black",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
-    fontFamily: "RajdhaniRegular",
+    fontFamily: "RajdhaniBold",
   },
   gameModeContainer: {
     flexDirection: "row",

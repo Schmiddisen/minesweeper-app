@@ -1,100 +1,111 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
-import { useFonts } from "expo-font";
 import Button from "../components/button";
+import BombIcon from "../components/startpage_mine";
+import { useFonts } from "expo-font";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StartScreen() {
-    const [fontsLoaded] = useFonts({
-        RajdhaniRegular: require("../assets/fonts/Rajdhani-Regular.ttf"),
-    });
-    const router = useRouter();
-    const [rows, setRows] = useState("8");
-    const [cols, setCols] = useState("8");
-    const [mines, setMines] = useState("10");
+  const [fontsLoaded] = useFonts({
+    RajdhaniRegular: require("../assets/fonts/Rajdhani-Regular.ttf"),
+    RajdhaniBold: require("../assets/fonts/Rajdhani-Bold.ttf"),
+    RajdhaniMedium: require("../assets/fonts/Rajdhani-Medium.ttf"),
+    RajdhaniLight: require("../assets/fonts/Rajdhani-Light.ttf"),
+    RajdhaniSemiBold: require("../assets/fonts/Rajdhani-SemiBold.ttf")
+  });
+  const router = useRouter();
+  const [color, setColor] = useState("#FFCC00");
 
-    const startGame = () => {
-        router.push(`/game?rows=${rows}&cols=${cols}&mines=${mines}`);
-    };
 
-    return (
-      <View style={styles.container}>
-        <Image
-          source={require("../assets/images/logo.png")}
-          style={styles.image}
-          resizeMode="contain"
-        />
-         <View style={styles.container_a}>
-            <Text style={styles.label}>Grid Größe (Reihen max. 22):</Text>
-            <TextInput
-            style={styles.input}
-            value={rows}
-            onChangeText={setRows}
-            keyboardType="numeric"
-            placeholder="8"
-            />
-            <Text style={styles.label}>Grid Größe (Spalten max. 13):</Text>
-            <TextInput
-            style={styles.input}
-            value={cols}
-            onChangeText={setCols}
-            keyboardType="numeric"
-            placeholder="8"
-            />
-            <Text style={styles.label}>Bombenanzahl:</Text>
-            <TextInput
-            style={styles.input}
-            value={mines}
-            onChangeText={setMines}
-            keyboardType="numeric"
-            placeholder="10"
-            />
+  const startGame = () => {
+    router.push('/game');
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <View style={styles.content}>
+            <View style={styles.colorPicker}>
+              {[
+                "#FFCC00",
+                "#4A90E2",
+                "#F95F62",
+                "#7ED321",
+                "#B07CFF",
+                "#FF9F1C",
+              ].map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  onPress={() => setColor(c)}
+                  style={[
+                    styles.colorDot,
+                    { backgroundColor: c, borderWidth: c === color ? 2 : 0 },
+                  ]}
+                />
+              ))}
+            </View>
+            <BombIcon size={200} color={color} />
+            <Text style={styles.title}>Minesweeper</Text>
+          </View>
+          <View style={styles.bottom}>
+            <Button title="Play" onPress={startGame} style={styles.button} />
+          </View>
         </View>
-        <Button style={styles.button} title="Spiel starten" onPress={startGame} />
-      </View>
-    );
-    }
+    </SafeAreaView>
+  );
+}
 
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        padding: 20,
-        justifyContent: "space-between", // Oben und unten platzieren
-        alignItems: "center",
-      },
-      container_a: {
-        flex: 1,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: "grey",
-        justifyContent: "center", // Oben und unten platzieren
-        padding: 20,
-      },
-      image: {
-        width: "100%",
-      },
-      title: {
-        fontSize: 32,
-        fontWeight: "bold",
-        color: "#fff",
-        marginBottom: 20,
-      },
-      label: {
-        alignSelf: "flex-start",
-        fontSize: 16,
-        marginVertical: 5,
-      },
-      input: {
-        width: "100%",
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: "grey",
-        padding: 10,
-        marginBottom: 15,
-        fontSize: 16,
-      },
-      button: {
-        width: "100%",
-        alignSelf: "flex-end", // horizontale Ausrichtung, nicht vertikal
-      },
-    });
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#242930",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#242930",
+    padding: 20,
+    justifyContent: "space-between",
+  },
+  content: {
+    alignItems: "center",
+  },
+  bottom: {
+    width: "100%",
+    paddingBottom: 10,
+  },
+  colorPicker: {
+    borderWidth: 0.3,
+    borderColor: "white",
+    borderRadius: 30,
+    padding: 10,
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    marginBottom: 20,
+    width: "100%",
+  },
+  colorDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderColor: "white",
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 28,
+    color: "white",
+    marginBottom: 40,
+    fontFamily: "RajdhaniBold",
+  },
+  button: {
+    width: "100%",
+    height: 60,
+    marginTop: 20,
+    alignSelf: "flex-end",
+  },
+});
