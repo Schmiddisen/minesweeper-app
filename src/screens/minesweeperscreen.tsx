@@ -59,6 +59,10 @@ export default function MinesweeperScreen() {
     setBoard(generateBoard(rows, cols, mines));
     setGameOver(false);
     setFirstClick(true); // Reset first click for the new game mode
+    // Reset the board's position and size
+    translateX.value = 0;
+    translateY.value = 0;
+    scale.value = 1; // Reset the scale to original size
   };
 
   const handlePressCell = (row: number, col: number) => {
@@ -121,6 +125,10 @@ export default function MinesweeperScreen() {
     setBoard(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
     setGameOver(false);
     setFirstClick(true); // Reset first click
+    // Reset the board's position and size
+    translateX.value = 0;
+    translateY.value = 0;
+    scale.value = 1; // Reset the scale to original size
   };
 
   const pinchGesture = Gesture.Pinch().onUpdate((event) => {
