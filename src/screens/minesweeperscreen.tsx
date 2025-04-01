@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from "react";
-import { View, Text, StyleSheet, Alert, Modal, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Alert, Modal, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -16,6 +16,7 @@ import { ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import BombIcon from "../components/startpage_mine";
+import HelpModal from "../components/helpModal";
 
 // Define game modes
 let GAME_MODES = {
@@ -110,7 +111,7 @@ export default function MinesweeperScreen() {
   // Function to change the game mode
   const changeGameMode = (mode: "EASY" | "MEDIUM" | "EXPERT" | "CUSTOM") => {
     if (mode === "CUSTOM") {
-      setModalVisible(true); // Öffne das Modal für benutzerdefinierten Modus
+      setModalVisible(true); // Open the modal for the custom mode
     } else {
       applyGameModeChanges(mode)
     }
@@ -131,11 +132,11 @@ export default function MinesweeperScreen() {
     const amountFields = rows * cols;
   
     if (isNaN(rows) || isNaN(cols) || isNaN(mines) || rows <= 0 || cols <= 0 || mines <= 0) {
-      alert("Bitte gültige Werte eingeben!");
+      alert("Please enter valid values!");
       return;
     }
     if (mines >= amountFields) {
-      alert("Es gibt mehr oder genau so viele Minen und Felder!");
+      alert("There are more or exactly as many mines and fields!");
       return;
     }
     GAME_MODES['CUSTOM'].cols = cols;
@@ -143,7 +144,7 @@ export default function MinesweeperScreen() {
     GAME_MODES['CUSTOM'].mines = mines;
 
     applyGameModeChanges('CUSTOM')
-    setModalVisible(false); // Modal schließen
+    setModalVisible(false); // Close the modal
   };
 
   const applyGameModeChanges = (mode: "EASY" | "MEDIUM" | "EXPERT" | "CUSTOM") => {
@@ -267,22 +268,29 @@ export default function MinesweeperScreen() {
   const [gameOverModalVisible, setGameOverModalVisible] = useState(false);
   const [gameOverMessage, setGameOverMessage] = useState("");
 
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
+
   const content = !fontsLoaded ? (
     <ActivityIndicator size="large" color={color} />
   ) : (
     <View style={styles.rootContainer}>
       <GestureHandlerRootView style={styles.container}>
         <View style={styles.container_header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={32} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.headerLeftButtons}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="chevron-back" size={32} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setHelpModalVisible(true)}>
+              <Ionicons name="help-circle-outline" size={32} color="#fff" />
+            </TouchableOpacity>
+          </View>
           <View style={styles.headerTitleContainer}>
             <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
             <View style={styles.infoContainer}>
               <View style={styles.infoRow}>
                 <Ionicons name="time-outline" size={20} color={color} />
                 <Text style={[styles.infoValue, { color: color }]}>
-                  {seconds} Sekunden
+                  {seconds} Seconds
                 </Text>
               </View>
               <View style={styles.infoRow}>
@@ -355,6 +363,13 @@ export default function MinesweeperScreen() {
           </View>
         </View>
       </GestureHandlerRootView>
+      {helpModalVisible && (
+        <HelpModal
+          visible={helpModalVisible}
+          onClose={() => setHelpModalVisible(false)}
+          color={color || "#FFCC00"}
+        />
+      )}
       {modalVisible && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -364,7 +379,7 @@ export default function MinesweeperScreen() {
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                placeholder="Zeilen"
+                placeholder="Rows"
                 value={customRows}
                 onChangeText={setCustomRows}
               />
@@ -374,7 +389,7 @@ export default function MinesweeperScreen() {
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                placeholder="Spalten"
+                placeholder="Columns"
                 value={customCols}
                 onChangeText={setCustomCols}
               />
@@ -384,19 +399,19 @@ export default function MinesweeperScreen() {
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                placeholder="Minen"
+                placeholder="Mines"
                 value={customMines}
                 onChangeText={setCustomMines}
               />
             </View>
             <View style={styles.buttonRow}>
               <Button
-                title="Abbrechen"
+                title="Cancel"
                 color="red"
                 onPress={() => setModalVisible(false)}
               />
               <Button
-                title="Starten"
+                title="Start"
                 color={color}
                 onPress={handleCustomGameStart}
               />
@@ -474,20 +489,6 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 3,
   },
-  modeButtonWrapper: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 5,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    backgroundColor: "#333",
-    borderRadius: 10,
-    padding: 8,
-    zIndex: 2,
-  },
   boardContainer: {
     alignSelf: "center",
     zIndex: 1,
@@ -501,10 +502,16 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 3,
   },
+  headerLeftButtons: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 5,
+  },
   headerTitleContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    marginHorizontal: 10,
   },
   flagModeWrapper: {
     flexDirection: "row",
@@ -518,14 +525,6 @@ const styles = StyleSheet.create({
   },
   flagButtonActive: {
     backgroundColor: "#FF6666",
-  },
-  flagModeText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "RajdhaniBold",
-  },
-  image: {
-    width: "100%",
   },
   modalOverlay: {
     position: 'absolute',
