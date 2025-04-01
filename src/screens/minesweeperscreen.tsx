@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
@@ -36,7 +36,28 @@ export default function MinesweeperScreen() {
 
   // State to hold the game mode
   const [gameMode, setGameMode] = useState<'EASY' | 'MEDIUM' | 'EXPERT'>('EASY');
+
+  //Timer stuff
+  const [seconds, setTimerSeconds] = useState(0);
+  const [isRunning, setIsTimerRunning] = useState(false);
+
+  useEffect(() => {
+    let interval:any;    
+    if (isRunning && !gameOver) {
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning]);
   
+  const handleTimerReset = () => {
+    setTimerSeconds(0);
+    setIsTimerRunning(false);
+  };
+
   // Track if it's the first click
   const [firstClick, setFirstClick] = useState(true);
   
@@ -63,6 +84,7 @@ export default function MinesweeperScreen() {
   // Function to change the game mode
   const changeGameMode = (mode: 'EASY' | 'MEDIUM' | 'EXPERT') => {
     setGameMode(mode);
+    handleTimerReset();
     const { rows, cols, mines } = GAME_MODES[mode];
     setBoard(generateBoard(rows, cols, mines));
     setGameOver(false);
@@ -77,6 +99,7 @@ export default function MinesweeperScreen() {
     if (gameOver) return;
 
     let newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
+    setIsTimerRunning(true);
 
     // On first click, regenerate the board and ensure the clicked cell isn't a mine
     if (firstClick) {
@@ -108,6 +131,7 @@ export default function MinesweeperScreen() {
       if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
         Alert.alert("Congratulations", "You won!");
         setGameOver(true);
+        setIsTimerRunning(false);
         Alert.alert("Game Over", "You hit a mine!");
       } else {
         newBoard = revealEmptyCells(newBoard, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
@@ -119,6 +143,7 @@ export default function MinesweeperScreen() {
         r.map((cell) => ({ ...cell, revealed: true })))
       ;
       setGameOver(true);
+      setIsTimerRunning(false);
       Alert.alert("Game Over", "You hit a mine!");
     } else {
       newBoard = revealEmptyCells(newBoard, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
@@ -128,11 +153,13 @@ export default function MinesweeperScreen() {
     if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
       Alert.alert("Congratulations", "You won!");
       setGameOver(true);
+      setIsTimerRunning(false);
     }
   };
 
   const restartGame = () => {
     setBoard(generateBoard(GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols, GAME_MODES[gameMode].mines));
+    handleTimerReset();
     setGameOver(false);
     setFirstClick(true); // Reset first click
     // Reset the board's position and size
@@ -169,6 +196,16 @@ export default function MinesweeperScreen() {
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
+          <View style={styles.infoContainer}>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: color }]}>⏳ Zeit:</Text>
+              <Text style={[styles.infoValue, { color: color }]}>{seconds} Sekunden</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: color }]}>💣 Bomben:</Text>
+              <Text style={[styles.infoValue, { color: color }]}>{GAME_MODES[gameMode].mines}</Text>
+            </View>
+          </View>
         </View>
       </View>
       <View style={styles.gameModeContainer}>
@@ -230,6 +267,25 @@ const styles = StyleSheet.create({
     fontFamily: "RajdhaniBold",
     alignSelf: "center",
     marginLeft: -22,
+  },
+  infoContainer: {
+    width: "75%",
+    backgroundColor: "#333",
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 5,
+  },
+  infoLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  infoValue: {
+    fontSize: 18,
   },
   gameModeContainer: {
     flexDirection: "row",
