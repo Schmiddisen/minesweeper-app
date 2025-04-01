@@ -82,13 +82,30 @@ export default function MinesweeperScreen() {
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: withSpring(scale.value) },
-      { translateX: withSpring(translateX.value) },
-      { translateY: withSpring(translateY.value) },
-    ],
-  }));
+  // Add zoom limits
+  const MIN_SCALE = 0.5;
+  const MAX_SCALE = 3;
+
+  // Add zoom step for buttons
+  const ZOOM_STEP = 0.2;
+
+  // Add zoom center point
+  const focalX = useSharedValue(0);
+  const focalY = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: focalX.value },
+        { translateY: focalY.value },
+        { scale: withSpring(scale.value) },
+        { translateX: -focalX.value },
+        { translateY: -focalY.value },
+        { translateX: withSpring(translateX.value) },
+        { translateY: withSpring(translateY.value) },
+      ],
+    };
+  });
 
   // Function to change the game mode
   const changeGameMode = (mode: "EASY" | "MEDIUM" | "EXPERT" | "CUSTOM") => {
@@ -175,10 +192,10 @@ export default function MinesweeperScreen() {
       }
       setBoard(newBoard);
       if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
-        Alert.alert("Congratulations", "You won!");
         setGameOver(true);
         setIsTimerRunning(false);
-        Alert.alert("Game Over", "You hit a mine!");
+        setGameOverMessage("Congratulations! You won!");
+        setGameOverModalVisible(true);
       } else {
         newBoard = revealEmptyCells(newBoard, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
       }
@@ -190,16 +207,18 @@ export default function MinesweeperScreen() {
       ;
       setGameOver(true);
       setIsTimerRunning(false);
-      Alert.alert("Game Over", "You hit a mine!");
+      setGameOverMessage("You hit a mine!");
+      setGameOverModalVisible(true);
     } else {
       newBoard = revealEmptyCells(newBoard, row, col, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols);
     }
 
     setBoard(newBoard);
     if (checkWin(newBoard, GAME_MODES[gameMode].mines)) {
-      Alert.alert("Congratulations", "You won!");
       setGameOver(true);
       setIsTimerRunning(false);
+      setGameOverMessage("Congratulations! You won!");
+      setGameOverModalVisible(true);
     }
   };
 
@@ -214,160 +233,214 @@ export default function MinesweeperScreen() {
     scale.value = 1; // Reset the scale to original size
   };
 
-  const pinchGesture = Gesture.Pinch().onUpdate((event) => {
-    scale.value = event.scale;
-  });
+  // Add zoom functions
+  const zoomIn = () => {
+    scale.value = Math.min(scale.value + ZOOM_STEP, MAX_SCALE);
+  };
+
+  const zoomOut = () => {
+    scale.value = Math.max(scale.value - ZOOM_STEP, MIN_SCALE);
+  };
+
+  const pinchGesture = Gesture.Pinch()
+    .onStart((event) => {
+      focalX.value = event.focalX;
+      focalY.value = event.focalY;
+    })
+    .onUpdate((event) => {
+      scale.value = Math.min(Math.max(event.scale, MIN_SCALE), MAX_SCALE);
+    });
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
-      // Track the starting position when pan starts
       startX.value = translateX.value;
       startY.value = translateY.value;
     })
     .onUpdate((event) => {
-      // Accumulate the translation values as the pan gesture updates
       translateX.value = startX.value + event.translationX;
       translateY.value = startY.value + event.translationY;
     });
 
-  const gestureHandler = Gesture.Race(pinchGesture, panGesture);
+  const gestureHandler = Gesture.Simultaneous(pinchGesture, panGesture);
+
+  // Add new state for game over modal
+  const [gameOverModalVisible, setGameOverModalVisible] = useState(false);
+  const [gameOverMessage, setGameOverMessage] = useState("");
 
   const content = !fontsLoaded ? (
     <ActivityIndicator size="large" color={color} />
   ) : (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.container_header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={32} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoRow}>
-              <Ionicons name="time-outline" size={20} color={color} />
-              <Text style={[styles.infoValue, { color: color }]}>
-                {seconds} Sekunden
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <BombIcon size={25} color={color} />
-              <Text style={[styles.infoValue, { color: color }]}>
-                {getFlaggedCount()}/{GAME_MODES[gameMode].mines}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <TouchableOpacity onPress={restartGame}>
-          <Ionicons name="refresh" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.gameModeContainer}>
-        <Button
-          title="Easy"
-          onPress={() => changeGameMode("EASY")}
-          color={color}
-        />
-        <Button
-          title="Medium"
-          onPress={() => changeGameMode("MEDIUM")}
-          color={color}
-        />
-        <Button
-          title="Expert"
-          onPress={() => changeGameMode("EXPERT")}
-          color={color}
-        />
-        <Button
-          title="Custom"
-          onPress={() => changeGameMode("CUSTOM")}
-          color={color}
-        />
-        {/* Custom Game Modal */}
-        <Modal animationType="slide" transparent={true} visible={modalVisible}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={[styles.title, { color: color }]}>Custom Game</Text>
-
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: color }]}>Rows:</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="Zeilen"
-                  value={customRows}
-                  onChangeText={setCustomRows}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: color }]}>Cols:</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="Spalten"
-                  value={customCols}
-                  onChangeText={setCustomCols}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: color }]}>
-                  Mines:
+    <View style={styles.rootContainer}>
+      <GestureHandlerRootView style={styles.container}>
+        <View style={styles.container_header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={32} color="#fff" />
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
+            <View style={styles.infoContainer}>
+              <View style={styles.infoRow}>
+                <Ionicons name="time-outline" size={20} color={color} />
+                <Text style={[styles.infoValue, { color: color }]}>
+                  {seconds} Sekunden
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="Minen"
-                  value={customMines}
-                  onChangeText={setCustomMines}
-                />
               </View>
-              <View style={styles.buttonRow}>
-                <Button
-                  title="Abbrechen"
-                  color="red"
-                  onPress={() => setModalVisible(false)}
-                />
-                <Button
-                  title="Starten"
-                  color={color}
-                  onPress={handleCustomGameStart}
-                />
+              <View style={styles.infoRow}>
+                <BombIcon size={25} color={color} />
+                <Text style={[styles.infoValue, { color: color }]}>
+                  {getFlaggedCount()}/{GAME_MODES[gameMode].mines}
+                </Text>
               </View>
             </View>
           </View>
-        </Modal>
-      </View>
-      <View style={styles.buttonContainer}>
-        <View style={styles.flagModeWrapper}>
-          <TouchableOpacity
-            onPress={() => setFlagMode(!flagMode)}
-            style={[styles.flagButton, flagMode && styles.flagButtonActive]}
-          >
-            <Ionicons name="flag" size={24} color="#fff" />
+          <TouchableOpacity onPress={restartGame}>
+            <Ionicons name="refresh" size={28} color="#fff" />
           </TouchableOpacity>
         </View>
-      </View>
-      <GestureDetector gesture={gestureHandler}>
-        <Animated.View style={[styles.boardContainer, animatedStyle]}>
-          <Board
-            board={board}
-            onPressCell={handlePressCell}
-            cellcolor={color}
+        <View style={styles.gameModeContainer}>
+          <Button
+            title="Easy"
+            onPress={() => changeGameMode("EASY")}
+            color={color}
           />
-        </Animated.View>
-      </GestureDetector>
-    </GestureHandlerRootView>
+          <Button
+            title="Medium"
+            onPress={() => changeGameMode("MEDIUM")}
+            color={color}
+          />
+          <Button
+            title="Expert"
+            onPress={() => changeGameMode("EXPERT")}
+            color={color}
+          />
+          <Button
+            title="Custom"
+            onPress={() => changeGameMode("CUSTOM")}
+            color={color}
+          />
+        </View>
+        <GestureDetector gesture={gestureHandler}>
+          <Animated.View style={[styles.boardContainer, animatedStyle]}>
+            <Board
+              board={board}
+              onPressCell={handlePressCell}
+              cellcolor={color}
+            />
+          </Animated.View>
+        </GestureDetector>
+        <View style={styles.bottomControls}>
+          <View style={styles.controlsContainer}>
+            <View style={styles.flagModeWrapper}>
+              <TouchableOpacity
+                onPress={() => setFlagMode(!flagMode)}
+                style={[styles.flagButton, flagMode && styles.flagButtonActive]}
+              >
+                <Ionicons name="flag" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.zoomButtons}>
+              <TouchableOpacity
+                onPress={zoomOut}
+                style={styles.zoomButton}
+              >
+                <Ionicons name="remove" size={24} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={zoomIn}
+                style={styles.zoomButton}
+              >
+                <Ionicons name="add" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </GestureHandlerRootView>
+      {modalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.title, { color: color }]}>Custom Game</Text>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: color }]}>Rows:</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Zeilen"
+                value={customRows}
+                onChangeText={setCustomRows}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: color }]}>Cols:</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Spalten"
+                value={customCols}
+                onChangeText={setCustomCols}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: color }]}>Mines:</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Minen"
+                value={customMines}
+                onChangeText={setCustomMines}
+              />
+            </View>
+            <View style={styles.buttonRow}>
+              <Button
+                title="Abbrechen"
+                color="red"
+                onPress={() => setModalVisible(false)}
+              />
+              <Button
+                title="Starten"
+                color={color}
+                onPress={handleCustomGameStart}
+              />
+            </View>
+          </View>
+        </View>
+      )}
+      {gameOverModalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.title, { color: color }]}>Game Over</Text>
+            <Text style={[styles.modalText, { color: color }]}>{gameOverMessage}</Text>
+            <View style={styles.buttonRow}>
+              <Button
+                title="OK"
+                color={color}
+                onPress={() => setGameOverModalVisible(false)}
+              />
+              <Button
+                title="Retry"
+                color={color}
+                onPress={() => {
+                  setGameOverModalVisible(false);
+                  restartGame();
+                }}
+              />
+            </View>
+          </View>
+        </View>
+      )}
+    </View>
   );
 
   return content;
 }
 
 const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+    backgroundColor: "#242930",
+  },
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: "#242930",
   },
   title: {
     fontSize: 40,
@@ -399,7 +472,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#333",
     borderRadius: 10,
     padding: 8,
-    zIndex: 2,
+    zIndex: 3,
   },
   modeButtonWrapper: {
     flexDirection: "row",
@@ -426,7 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#333",
     borderRadius: 10,
     padding: 8,
-    zIndex: 2,
+    zIndex: 3,
   },
   headerTitleContainer: {
     flex: 1,
@@ -437,11 +510,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 5,
   },
   flagButton: {
     backgroundColor: "#444",
-    padding: 8,
+    padding: 12,
     borderRadius: 8,
   },
   flagButtonActive: {
@@ -455,23 +527,64 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 3,
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
   },
   modalContent: {
     backgroundColor: "#333",
-    padding: 15,
+    padding: 20,
     borderRadius: 10,
-    width: 300,
+    width: '80%',
+    maxWidth: 300,
     alignItems: "center",
   },
-  modalTitle: {
+  modalText: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 5,
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: "RajdhaniMedium",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 5,
+  },
+  zoomButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  zoomButton: {
+    backgroundColor: '#444',
+    padding: 12,
+    borderRadius: 8,
+  },
+  bottomControls: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 10,
+    backgroundColor: 'transparent',
+    zIndex: 3,
+  },
+  controlsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: "#333",
+    borderRadius: 10,
+    padding: 12,
+    marginHorizontal: 10,
   },
   input: {
     width: "100%",
@@ -492,11 +605,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 2,
     textAlign: "left",
-  },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginTop: 5,
   },
 });
