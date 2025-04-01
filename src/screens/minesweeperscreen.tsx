@@ -168,38 +168,32 @@ export default function MinesweeperScreen() {
           <Ionicons name="chevron-back" size={32} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={[styles.title, { color: color }]}>Minesweeper</Text>
+          <Text style={[styles.title, { color: "white" }]}>Minesweeper</Text>
         </View>
+        <TouchableOpacity onPress={restartGame}>
+          <Ionicons name="refresh" size={28} color="#fff" />
+        </TouchableOpacity>
       </View>
       <View style={styles.gameModeContainer}>
-        <Button
-          title="Easy"
-          onPress={() => changeGameMode("EASY")}
-          color={color}
-        />
-        <Button
-          title="Medium"
-          onPress={() => changeGameMode("MEDIUM")}
-          color={color}
-        />
-        <Button
-          title="Expert"
-          onPress={() => changeGameMode("EXPERT")}
-          color={color}
-        />
-        <Button
-          title="OWn"
-          onPress={() => changeGameMode("EXPERT")}
-          color={color}
-        />
+        <View style={styles.modeButtonWrapper}>
+          <Button title="Easy" onPress={() => changeGameMode("EASY")} color={color} />
+          <Button title="Medium" onPress={() => changeGameMode("MEDIUM")} color={color} />
+          <Button title="Expert" onPress={() => changeGameMode("EXPERT")} color={color} />
+          <Button title="Own" onPress={() => changeGameMode("EXPERT")} color={color} />
+        </View>
       </View>
       <View style={styles.buttonContainer}>
-        <Button
-          title={flagMode ? "Select Mode" : "Flag Mode"}
-          onPress={() => setFlagMode(!flagMode)}
-          color={color}
-        />
-        <Button title="Restart Game" onPress={restartGame} color={color} />
+        <View style={styles.flagModeWrapper}>
+          <TouchableOpacity
+            onPress={() => setFlagMode(!flagMode)}
+            style={[
+              styles.flagButton,
+              flagMode && styles.flagButtonActive
+            ]}
+          >
+            <Ionicons name="flag" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
       <GestureDetector gesture={gestureHandler}>
         <Animated.View style={[styles.boardContainer, animatedStyle]}>
@@ -229,16 +223,20 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     fontFamily: "RajdhaniBold",
     alignSelf: "center",
-    marginLeft: -22,
   },
   gameModeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    alignItems: "center",
     marginVertical: 20,
+  },
+  modeButtonWrapper: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 10,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     marginBottom: 20,
   },
   boardContainer: {
@@ -247,11 +245,32 @@ const styles = StyleSheet.create({
   container_header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
   },
   headerTitleContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  flagModeWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
+  flagButton: {
+    backgroundColor: "#444",
+    padding: 10,
+    borderRadius: 8,
+  },
+  flagButtonActive: {
+    backgroundColor: "#FF6666",
+  },
+  flagModeText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "RajdhaniBold",
   },
   image: {
     width: "100%",

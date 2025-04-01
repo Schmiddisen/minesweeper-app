@@ -22,8 +22,8 @@ export default function Board({ board, onPressCell, cellcolor }: BoardProps) {
               col={colIndex}
               onPressCell={onPressCell}
               unrevealedCellsColor={cellcolor}
-              revealedCellsColor="#999"
-              bombCellColor="#E53935"
+              revealedCellsColor="lightgray"
+              bombCellColor="#FF6666"
             />
           ))}
         </View>
@@ -35,7 +35,7 @@ export default function Board({ board, onPressCell, cellcolor }: BoardProps) {
 const styles = StyleSheet.create({
   board: {
     borderWidth: 2,
-    borderColor: "#000",
+    borderColor: "lightgray",
     padding: 5,
   },
   row: {

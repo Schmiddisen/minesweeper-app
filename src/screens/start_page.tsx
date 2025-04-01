@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import Button from "../components/button";
 import BombIcon from "../components/startpage_mine";
@@ -81,8 +81,8 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   colorPicker: {
-    borderWidth: 0.3,
-    borderColor: "white",
+    borderWidth: 1,
+    borderColor: "lightgray",
     borderRadius: 30,
     padding: 10,
     flexDirection: "row",
@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    borderColor: "white",
+    borderColor: "lightgray",
+    borderWidth: 2,
   },
   logo: {
     width: 200,
