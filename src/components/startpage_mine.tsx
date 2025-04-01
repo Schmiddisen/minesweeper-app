@@ -33,7 +33,7 @@ export default function BombIcon({ size = 200, color = "#F5C644" }) {
       <G>
         {spikes}
         <Circle cx={center} cy={center} r={radius} fill={color} />
-        <Circle cx={center} cy={center} r={3} fill="#242930"/>
+        <Circle cx={center} cy={center} r={3} fill="black" />
       </G>
     </Svg>
   );
