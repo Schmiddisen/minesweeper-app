@@ -114,15 +114,65 @@ export const checkWin = (board: Board, mines: number): boolean => {
   return totalCells - revealedCount === mines;
 };
 
-export const calculate3BV = (board: Board): number => {
-  let count = 0;
-  board.forEach((row) => {
-    row.forEach((cell) => {
-      if (!cell.revealed && !cell.mine) {
-        count++;
+// Helper function to flood fill adjacent empty cells
+const floodFillMark = (
+  board: Board,
+  row: number,
+  col: number,
+  rows: number,
+  cols: number,
+  marked: boolean[][]
+) => {
+  const stack: [number, number][] = [[row, col]];
+  while (stack.length > 0) {
+    const [r, c] = stack.pop()!;
+    if (marked[r][c]) continue;
+
+    marked[r][c] = true;
+
+    // Check all 8 directions around the current cell
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !marked[nr][nc]) {
+          if (board[nr][nc].adjacent === 0) {
+            stack.push([nr, nc]); // Continue flood fill if adjacent is 0
+          } else {
+            marked[nr][nc] = true; // Mark non-empty adjacent cells
+          }
+        }
       }
-    });
-  });
+    }
+  }
+};
+
+// 3BV Calculation
+export const calculate3BV = (board: Board, rows: number, cols: number): number => {
+  const marked: boolean[][] = Array.from({ length: rows }, () => Array(cols).fill(false));
+  let count = 0;
+
+  // Count 3BV for empty cells (0 cells) by flood-filling them
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (board[r][c].adjacent === 0 && !marked[r][c] && !board[r][c].mine) {
+        // If it's an empty cell and hasn't been marked yet, perform flood fill
+        floodFillMark(board, r, c, rows, cols, marked);
+        count++; // One flood fill adds one to the 3BV
+      }
+    }
+  }
+
+  // After flood filling, count remaining non-mine non-marked cells
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (!marked[r][c] && !board[r][c].mine) {
+        count++; // Each remaining non-mine non-marked cell adds 1 to the 3BV
+      }
+    }
+  }
+
   return count;
 };
 

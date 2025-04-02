@@ -433,10 +433,10 @@ export default function MinesweeperScreen() {
               Time: {seconds} seconds
             </Text>
             <Text style={[styles.modalText, { color: color }]}>
-              3BV: {calculate3BV(board)}
+              3BV: {calculate3BV(board, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols)}
             </Text>
             <Text style={[styles.modalText, { color: color }]}>
-              3BV/s: {(calculate3BV(board) / seconds).toFixed(2)}
+              3BV/s: {(calculate3BV(board, GAME_MODES[gameMode].rows, GAME_MODES[gameMode].cols) / seconds).toFixed(2)}
             </Text>
             <View style={styles.buttonRow}>
               <Button
