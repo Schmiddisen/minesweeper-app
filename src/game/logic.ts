@@ -114,6 +114,18 @@ export const checkWin = (board: Board, mines: number): boolean => {
   return totalCells - revealedCount === mines;
 };
 
+export const calculate3BV = (board: Board): number => {
+  let count = 0;
+  board.forEach((row) => {
+    row.forEach((cell) => {
+      if (!cell.revealed && !cell.mine) {
+        count++;
+      }
+    });
+  });
+  return count;
+};
+
 // Counts flagged neighbors around a given cell
 export const countFlaggedNeighbors = (board: Board, row: number, col: number): number => {
   let count = 0;

@@ -9,7 +9,7 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Board from "../components/board";
 import Button from "../components/button";
-import { generateBoard, revealEmptyCells, checkWin, countFlaggedNeighbors, revealNeighboringCells } from "../game/logic";
+import { generateBoard, revealEmptyCells, checkWin, calculate3BV, countFlaggedNeighbors, revealNeighboringCells } from "../game/logic";
 import { Cell } from "../game/models";
 import { useFonts } from 'expo-font';
 import { ActivityIndicator } from 'react-native';
@@ -429,6 +429,15 @@ export default function MinesweeperScreen() {
           <View style={styles.modalContent}>
             <Text style={[styles.title, { color: color }]}>Game Over</Text>
             <Text style={[styles.modalText, { color: color }]}>{gameOverMessage}</Text>
+            <Text style={[styles.modalText, { color: color }]}>
+              Time: {seconds} seconds
+            </Text>
+            <Text style={[styles.modalText, { color: color }]}>
+              3BV: {calculate3BV(board)}
+            </Text>
+            <Text style={[styles.modalText, { color: color }]}>
+              3BV/s: {(calculate3BV(board) / seconds).toFixed(2)}
+            </Text>
             <View style={styles.buttonRow}>
               <Button
                 title="OK"
