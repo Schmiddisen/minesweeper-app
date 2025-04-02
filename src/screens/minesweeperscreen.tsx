@@ -239,12 +239,24 @@ export default function MinesweeperScreen() {
 
   // Handle zooming in
   const zoomIn = () => {
-    scale.value = Math.min(scale.value + ZOOM_STEP, MAX_SCALE);
+    const newScale = Math.min(scale.value + ZOOM_STEP, MAX_SCALE);
+    // Calculate the center of the screen
+    const centerX = 0; // Center of the screen
+    const centerY = 0; // Center of the screen
+    focalX.value = centerX;
+    focalY.value = centerY;
+    scale.value = newScale;
   };
 
   // Handle zooming out
   const zoomOut = () => {
-    scale.value = Math.max(scale.value - ZOOM_STEP, MIN_SCALE);
+    const newScale = Math.max(scale.value - ZOOM_STEP, MIN_SCALE);
+    // Calculate the center of the screen
+    const centerX = 0; // Center of the screen
+    const centerY = 0; // Center of the screen
+    focalX.value = centerX;
+    focalY.value = centerY;
+    scale.value = newScale;
   };
 
   // Set up gesture handling for zooming and panning
